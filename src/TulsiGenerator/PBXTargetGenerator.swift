@@ -1450,7 +1450,23 @@ final class PBXTargetGenerator: PBXTargetGeneratorProtocol {
     var defines = Set<String>()
     let swiftIncludePaths = NSMutableOrderedSet()
     let otherSwiftFlags = NSMutableArray()
+    let frameworkSearchPathSet = NSMutableOrderedSet()
 
+    func addFrameworkSearchPath(from entry: RuleEntry) {
+        for dep in entry.dependencies {
+            if let depEntry = ruleEntryMap.ruleEntry(buildLabel: dep, depender: entry) {
+                addFrameworkSearchPath(from: depEntry)
+            }
+        }
+
+        for info in entry.frameworkImports {
+            let fullPath = info.fullPath as NSString
+            let rootedPath = "$(\(PBXTargetGenerator.BazelWorkspaceSymlinkVarName))/\(fullPath.deletingLastPathComponent)"
+            frameworkSearchPathSet.add(rootedPath)
+        }
+    }
+
+    addFrameworkSearchPath(from: ruleEntry)
     addIncludes(ruleEntry, toSet: includes)
     addLocalSettings(ruleEntry, localDefines: &defines, localIncludes: includes,
                      otherCFlags: NSMutableArray(), swiftIncludePaths: NSMutableOrderedSet(),
@@ -1469,6 +1485,10 @@ final class PBXTargetGenerator: PBXTargetGeneratorProtocol {
 
     if let otherSwiftFlagsArr = otherSwiftFlags as? [String], !otherSwiftFlagsArr.isEmpty {
       testSettings["OTHER_SWIFT_FLAGS"] = "$(inherited) " + otherSwiftFlagsArr.joined(separator: " ")
+    }
+
+    if let frameworkSearchPaths = frameworkSearchPathSet.array as? [String], !frameworkSearchPaths.isEmpty {
+      testSettings["FRAMEWORK_SEARCH_PATHS"] = "$(inherited) " + frameworkSearchPaths.joined(separator: " ")
     }
 
     if let moduleName = ruleEntry.moduleName {
