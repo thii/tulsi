@@ -106,6 +106,14 @@ public enum TulsiOptionKey: String {
   case BuildActionPostActionScript,
        LaunchActionPostActionScript,
        TestActionPostActionScript
+
+  // Additional build settings for user overriding
+  case CC,
+       CLANG_ANALYZER_EXEC,
+       CXX,
+       LD,
+       LIBTOOL,
+       SWIFT_EXEC
 }
 
 
@@ -321,7 +329,6 @@ public class TulsiOptionSet: Equatable {
                 optionType: optionType, defaultValue: defaultValue)
     }
 
-    addBoolOption(.ALWAYS_SEARCH_USER_PATHS, .BuildSetting, false)
     addBoolOption(.BazelContinueBuildingAfterError, .Generic, false)
     addStringOption(.BazelBuildOptionsDebug, [.TargetSpecializable, .SupportsInheritKeyword])
     addStringOption(.BazelBuildOptionsRelease, [.TargetSpecializable, .SupportsInheritKeyword])
@@ -337,6 +344,13 @@ public class TulsiOptionSet: Equatable {
     addBoolOption(.TreeArtifactOutputs, .Generic, true)
     addBoolOption(.Use64BitWatchSimulator, .Generic, false)
     addBoolOption(.DisableCustomLLDBInit, .Generic, false)
+
+    addStringOption(.CC, .BuildSetting)
+    addStringOption(.CLANG_ANALYZER_EXEC, .BuildSetting)
+    addStringOption(.CXX, .BuildSetting)
+    addStringOption(.LD, .BuildSetting)
+    addStringOption(.LIBTOOL, .BuildSetting)
+    addStringOption(.SWIFT_EXEC, .BuildSetting)
 
     let defaultIdentifier = PlatformConfiguration.defaultConfiguration.identifier
     let platformCPUIdentifiers = PlatformConfiguration.allValidConfigurations.map { $0.identifier }
